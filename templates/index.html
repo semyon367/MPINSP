@@ -347,14 +347,23 @@ document.getElementById('mainForm').addEventListener('submit', async function(e)
   startProgress();
 
   try {
-    // Сначала получаем статистику
     const fd2 = new FormData();
     fd2.append('file',      fileInput.files[0]);
     fd2.append('date_from', fd.get('date_from'));
     fd2.append('date_to',   fd.get('date_to'));
 
-    const res = await fetch('/preview', { method: 'POST', body: fd2 });
-    const json = await res.json();
+    const res  = await fetch('/preview', { method: 'POST', body: fd2 });
+    const text = await res.text();
+
+    let json;
+    try {
+      json = JSON.parse(text);
+    } catch(_) {
+      // Сервер вернул HTML вместо JSON — показываем первые 300 символов для диагностики
+      stopProgress(false);
+      showError('Сервер вернул неожиданный ответ (не JSON).\n\nПервые символы ответа:\n' + text.slice(0, 300));
+      return;
+    }
 
     if (!res.ok || json.error) {
       stopProgress(false);
@@ -384,8 +393,11 @@ document.getElementById('downloadBtn').addEventListener('click', async function(
   try {
     const res = await fetch('/analyze', { method: 'POST', body: fd });
     if (!res.ok) {
-      const j = await res.json().catch(() => ({}));
-      showError(j.error || 'Ошибка при формировании файла');
+      const text = await res.text();
+      let msg;
+      try   { msg = JSON.parse(text).error; }
+      catch (_) { msg = 'Сервер вернул ошибку:\n' + text.slice(0, 300); }
+      showError(msg || 'Ошибка при формировании файла');
       return;
     }
     const blob = await res.blob();
@@ -427,4 +439,3 @@ function showError(msg) {
 </script>
 </body>
 </html>
-
