@@ -3,402 +3,311 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Анализ МП Инспектор</title>
+  <title>МП Инспектор — Анализ КНМ</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
+    :root {
+      --blue:        #3b6fd4;
+      --blue-dark:   #2451a8;
+      --blue-light:  #eef3ff;
+      --green:       #2d9e5f;
+      --green-light: #edfaf3;
+      --orange:      #d4600a;
+      --orange-light:#fff4ec;
+      --red:         #d43b3b;
+      --red-light:   #fff0f0;
+      --gray-50:     #f8f9fc;
+      --gray-100:    #f0f2f7;
+      --gray-200:    #e2e6ef;
+      --gray-400:    #9aa3b8;
+      --gray-600:    #5a6480;
+      --gray-900:    #161d30;
+      --radius:      14px;
+      --shadow:      0 8px 40px rgba(30,50,120,.10), 0 1px 4px rgba(30,50,120,.06);
+    }
     body {
-      font-family: 'Segoe UI', Arial, sans-serif;
-      background: #f0f2f5;
-      color: #1a1a2e;
+      font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+      background: linear-gradient(135deg, #e8eeff 0%, #f5f0ff 50%, #eafaf3 100%);
       min-height: 100vh;
       display: flex;
-      align-items: flex-start;
-      justify-content: center;
-      padding: 40px 16px;
-    }
-
-    .card {
-      background: #fff;
-      border-radius: 16px;
-      box-shadow: 0 4px 24px rgba(0,0,0,0.10);
-      padding: 40px 44px;
-      width: 100%;
-      max-width: 640px;
-    }
-
-    .logo {
-      display: flex;
+      flex-direction: column;
       align-items: center;
-      gap: 12px;
-      margin-bottom: 28px;
+      padding: 48px 16px 64px;
     }
-    .logo-icon {
-      width: 44px; height: 44px;
-      background: linear-gradient(135deg, #4472C4, #2a4fa0);
-      border-radius: 10px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 22px;
+    .header { text-align: center; margin-bottom: 32px; }
+    .header-badge {
+      display: inline-flex; align-items: center; gap: 7px;
+      background: var(--blue-light); color: var(--blue);
+      border: 1px solid #c5d5f8; border-radius: 99px;
+      padding: 5px 14px; font-size: 0.75rem; font-weight: 600;
+      letter-spacing: .04em; margin-bottom: 14px;
     }
-    .logo h1 { font-size: 1.35rem; font-weight: 700; color: #1a1a2e; line-height: 1.2; }
-    .logo p  { font-size: 0.8rem; color: #888; margin-top: 2px; }
-
-    .section-title {
-      font-size: 0.72rem;
-      font-weight: 700;
-      color: #4472C4;
-      text-transform: uppercase;
-      letter-spacing: .08em;
-      margin-bottom: 10px;
+    .header h1 { font-size: 2rem; font-weight: 800; color: var(--gray-900); letter-spacing: -.02em; line-height: 1.15; }
+    .header p  { color: var(--gray-600); font-size: 0.95rem; margin-top: 8px; }
+    .card {
+      background: #fff; border-radius: var(--radius);
+      box-shadow: var(--shadow); padding: 36px 40px;
+      width: 100%; max-width: 660px;
+      border: 1px solid rgba(255,255,255,.8);
     }
-
-    .field { margin-bottom: 20px; }
-    label  { display: block; font-size: 0.88rem; font-weight: 600; margin-bottom: 6px; color: #333; }
-
-    input[type="date"], .file-area {
-      width: 100%;
-      border: 1.5px solid #dde1e9;
-      border-radius: 8px;
-      padding: 10px 14px;
-      font-size: 0.95rem;
-      color: #1a1a2e;
-      transition: border-color .2s;
-      background: #fafbfc;
+    .step-label { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+    .step-num {
+      width: 24px; height: 24px; background: var(--blue); color: #fff;
+      border-radius: 50%; font-size: 0.72rem; font-weight: 700;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
     }
-    input[type="date"]:focus { outline: none; border-color: #4472C4; background: #fff; }
-
+    .step-label span { font-size: 0.8rem; font-weight: 700; color: var(--gray-600); text-transform: uppercase; letter-spacing: .07em; }
+    .field { margin-bottom: 24px; }
+    .drop-zone {
+      border: 2px dashed var(--gray-200); border-radius: 12px;
+      background: var(--gray-50); padding: 28px 20px;
+      display: flex; flex-direction: column; align-items: center; gap: 6px;
+      cursor: pointer; text-align: center; user-select: none;
+      transition: border-color .2s, background .2s, transform .15s;
+    }
+    .drop-zone:hover { border-color: var(--blue); background: var(--blue-light); }
+    .drop-zone.drag  { border-color: var(--blue); background: var(--blue-light); transform: scale(1.01); }
+    .drop-zone.has-file { border-style: solid; border-color: var(--green); background: var(--green-light); }
+    .drop-zone input { display: none; }
+    .drop-icon {
+      width: 52px; height: 52px;
+      background: linear-gradient(135deg, var(--blue-light), #dde8ff);
+      border-radius: 12px; display: flex; align-items: center; justify-content: center;
+      font-size: 1.6rem; margin-bottom: 4px; transition: background .2s;
+    }
+    .drop-zone.has-file .drop-icon { background: linear-gradient(135deg, var(--green-light), #c3f0d8); }
+    .drop-title { font-size: 0.95rem; font-weight: 600; color: var(--gray-900); }
+    .drop-sub   { font-size: 0.8rem; color: var(--gray-400); }
+    .drop-file-name { font-size: 0.85rem; font-weight: 600; color: var(--green); max-width: 90%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .date-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-
-    /* Drag-and-drop зона */
-    .file-area {
-      min-height: 110px;
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      gap: 8px;
-      cursor: pointer;
-      text-align: center;
-      color: #888;
-      font-size: 0.9rem;
-      transition: border-color .2s, background .2s;
+    .date-field label { display: block; font-size: 0.8rem; font-weight: 600; color: var(--gray-600); margin-bottom: 6px; }
+    .date-field input[type="date"] {
+      width: 100%; border: 1.5px solid var(--gray-200); border-radius: 10px;
+      padding: 11px 14px; font-size: 0.95rem; font-family: inherit;
+      color: var(--gray-900); background: var(--gray-50);
+      transition: border-color .2s, background .2s, box-shadow .2s; appearance: none;
     }
-    .file-area:hover, .file-area.drag { border-color: #4472C4; background: #f0f4ff; }
-    .file-area .icon { font-size: 2rem; }
-    .file-area input { display: none; }
-    .file-area .filename { color: #4472C4; font-weight: 600; font-size: 0.88rem; }
-
+    .date-field input[type="date"]:focus { outline: none; border-color: var(--blue); background: #fff; box-shadow: 0 0 0 3px rgba(59,111,212,.12); }
     .btn {
-      width: 100%;
-      padding: 13px;
-      border: none;
-      border-radius: 9px;
-      font-size: 1rem;
-      font-weight: 700;
-      cursor: pointer;
-      transition: opacity .15s, transform .1s;
-      margin-top: 4px;
+      width: 100%; padding: 14px; border: none; border-radius: 11px;
+      font-size: 0.97rem; font-weight: 700; font-family: inherit; cursor: pointer;
+      transition: opacity .15s, transform .1s, box-shadow .2s;
+      display: flex; align-items: center; justify-content: center; gap: 8px; letter-spacing: .01em;
     }
-    .btn:active { transform: scale(0.98); }
-    .btn-primary { background: linear-gradient(135deg, #4472C4, #2a4fa0); color: #fff; }
-    .btn-primary:disabled { opacity: .55; cursor: not-allowed; }
-    .btn-download { background: linear-gradient(135deg, #538135, #3a5c24); color: #fff; display: none; margin-top: 10px; }
-
-    /* Прогресс */
-    .progress { display: none; margin-top: 18px; }
-    .progress-bar-wrap {
-      background: #eef0f5; border-radius: 99px; height: 8px; overflow: hidden;
-    }
-    .progress-bar {
-      height: 100%; width: 0%;
-      background: linear-gradient(90deg, #4472C4, #7aa3e8);
-      border-radius: 99px;
-      transition: width .3s ease;
-    }
-    .progress-label { font-size: 0.83rem; color: #666; margin-top: 7px; text-align: center; }
-
-    /* Статистика */
-    .stats { display: none; margin-top: 24px; }
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
-    }
-    .stat-card {
-      background: #f5f7ff;
-      border-radius: 10px;
-      padding: 14px 12px;
-      text-align: center;
-    }
-    .stat-card .val  { font-size: 1.6rem; font-weight: 800; color: #4472C4; line-height: 1; }
-    .stat-card .lbl  { font-size: 0.73rem; color: #777; margin-top: 5px; }
-    .stat-card.green .val { color: #538135; }
-    .stat-card.orange .val { color: #C55A11; }
-
-    .info-row {
-      display: flex; gap: 8px; flex-wrap: wrap;
-      margin-bottom: 14px;
-    }
-    .badge {
-      background: #eef2ff; color: #4472C4;
-      border-radius: 6px; padding: 4px 10px;
-      font-size: 0.8rem; font-weight: 600;
-    }
-
-    /* Ошибка */
-    .error-box {
-      display: none;
-      margin-top: 16px;
-      background: #fff1f1; border: 1.5px solid #f5c6c6;
-      border-radius: 9px; padding: 14px 16px;
-      color: #c0392b; font-size: 0.88rem;
-      white-space: pre-wrap; word-break: break-word;
-    }
-
-    hr { border: none; border-top: 1.5px solid #eef0f5; margin: 24px 0; }
-
-    @media (max-width: 480px) {
-      .card { padding: 24px 18px; }
-      .stats-grid { grid-template-columns: 1fr 1fr; }
+    .btn:active:not(:disabled) { transform: scale(0.985); }
+    .btn-primary { background: linear-gradient(135deg, var(--blue), var(--blue-dark)); color: #fff; box-shadow: 0 4px 16px rgba(59,111,212,.30); margin-top: 4px; }
+    .btn-primary:hover:not(:disabled) { box-shadow: 0 6px 24px rgba(59,111,212,.40); }
+    .btn-primary:disabled { opacity: .5; cursor: not-allowed; box-shadow: none; }
+    .btn-download { background: linear-gradient(135deg, var(--green), #1f7a47); color: #fff; box-shadow: 0 4px 16px rgba(45,158,95,.30); display: none; margin-top: 16px; }
+    .btn-download:hover:not(:disabled) { box-shadow: 0 6px 24px rgba(45,158,95,.40); }
+    .btn-download:disabled { opacity: .6; cursor: not-allowed; }
+    .progress-wrap { display: none; margin-top: 20px; }
+    .progress-track { background: var(--gray-100); border-radius: 99px; height: 6px; overflow: hidden; }
+    .progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--blue), #7aa3e8); border-radius: 99px; transition: width .4s ease; }
+    .progress-text { font-size: 0.8rem; color: var(--gray-400); margin-top: 8px; text-align: center; font-weight: 500; }
+    .divider { border: none; border-top: 1.5px solid var(--gray-100); margin: 28px 0; }
+    .error-box { display: none; margin-top: 16px; background: var(--red-light); border: 1.5px solid #f5c0c0; border-radius: 10px; padding: 14px 16px; color: var(--red); font-size: 0.87rem; white-space: pre-wrap; word-break: break-word; line-height: 1.55; }
+    .results { display: none; }
+    .results-title { font-size: 1rem; font-weight: 700; color: var(--gray-900); margin-bottom: 14px; }
+    .badges-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+    .badge { background: var(--blue-light); color: var(--blue); border-radius: 8px; padding: 5px 12px; font-size: 0.78rem; font-weight: 600; border: 1px solid #c5d5f8; }
+    .metrics-section { margin-bottom: 20px; }
+    .metrics-section-title { font-size: 0.72rem; font-weight: 700; color: var(--gray-400); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 10px; }
+    .metrics-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .metric-card { border-radius: 12px; padding: 16px 12px 14px; text-align: center; border: 1px solid transparent; }
+    .metric-card.blue   { background: var(--blue-light);   border-color: #c5d5f8; }
+    .metric-card.green  { background: var(--green-light);  border-color: #b8edcd; }
+    .metric-card.orange { background: var(--orange-light); border-color: #f5d5bb; }
+    .metric-val { font-size: 1.75rem; font-weight: 800; line-height: 1; letter-spacing: -.02em; }
+    .metric-card.blue   .metric-val { color: var(--blue); }
+    .metric-card.green  .metric-val { color: var(--green); }
+    .metric-card.orange .metric-val { color: var(--orange); }
+    .metric-lbl { font-size: 0.72rem; font-weight: 500; color: var(--gray-600); margin-top: 6px; line-height: 1.3; }
+    .footer { margin-top: 28px; font-size: 0.75rem; color: var(--gray-400); text-align: center; }
+    @media (max-width: 500px) {
+      body { padding: 24px 12px 48px; }
+      .card { padding: 24px 20px; }
+      .header h1 { font-size: 1.5rem; }
       .date-row { grid-template-columns: 1fr; }
+      .metrics-grid { grid-template-columns: 1fr 1fr; }
     }
   </style>
 </head>
 <body>
-<div class="card">
-  <div class="logo">
-    <div class="logo-icon">📊</div>
-    <div>
-      <h1>МП Инспектор</h1>
-      <p>Анализ контрольно-надзорных мероприятий</p>
-    </div>
-  </div>
 
+<div class="header">
+  <div class="header-badge">📋 МЧС России</div>
+  <h1>Анализ МП Инспектор</h1>
+  <p>Расчёт показателей применения мобильного приложения по данным АИС КНД</p>
+</div>
+
+<div class="card">
   <form id="mainForm">
 
-    <div class="section-title">1. Файл выгрузки</div>
     <div class="field">
-      <div class="file-area" id="dropZone" onclick="document.getElementById('fileInput').click()">
-        <div class="icon">📂</div>
-        <div>Нажмите или перетащите файл</div>
-        <div style="font-size:.8rem; color:#aaa">.xlsx / .xlsm</div>
+      <div class="step-label">
+        <div class="step-num">1</div>
+        <span>Файл выгрузки АИС КНД</span>
+      </div>
+      <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+        <div class="drop-icon" id="dropIcon">📂</div>
+        <div class="drop-title" id="dropTitle">Нажмите или перетащите файл</div>
+        <div class="drop-sub" id="dropSub">Поддерживается .xlsx и .xlsm, до 50 МБ</div>
+        <div class="drop-file-name" id="fileName"></div>
         <input type="file" id="fileInput" name="file" accept=".xlsx,.xlsm"/>
-        <div class="filename" id="fileName"></div>
       </div>
     </div>
 
-    <div class="section-title">2. Период (дата акта КНМ)</div>
-    <div class="date-row field">
-      <div>
-        <label for="date_from">С</label>
-        <input type="date" id="date_from" name="date_from" required/>
+    <div class="field">
+      <div class="step-label">
+        <div class="step-num">2</div>
+        <span>Период по дате составления акта КНМ</span>
       </div>
-      <div>
-        <label for="date_to">По</label>
-        <input type="date" id="date_to" name="date_to" required/>
+      <div class="date-row">
+        <div class="date-field">
+          <label for="date_from">Дата начала</label>
+          <input type="date" id="date_from" name="date_from" required/>
+        </div>
+        <div class="date-field">
+          <label for="date_to">Дата окончания</label>
+          <input type="date" id="date_to" name="date_to" required/>
+        </div>
       </div>
     </div>
 
     <button type="submit" class="btn btn-primary" id="submitBtn">
-      ⚙️ Запустить анализ
+      <span>⚙️</span> Запустить анализ
     </button>
+
   </form>
 
-  <!-- Прогресс -->
-  <div class="progress" id="progress">
-    <div class="progress-bar-wrap">
-      <div class="progress-bar" id="progressBar"></div>
-    </div>
-    <div class="progress-label" id="progressLabel">Загрузка файла...</div>
+  <div class="progress-wrap" id="progressWrap">
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="progress-text" id="progressText">Обработка...</div>
   </div>
 
-  <!-- Ошибка -->
   <div class="error-box" id="errorBox"></div>
 
-  <!-- Статистика -->
-  <div class="stats" id="statsBlock">
-    <hr/>
-    <div class="section-title">Результат</div>
-    <div class="info-row">
+  <div class="results" id="results">
+    <hr class="divider"/>
+    <div class="results-title">✅ Анализ завершён</div>
+    <div class="badges-row">
       <span class="badge" id="st_rows"></span>
       <span class="badge" id="st_filtered"></span>
       <span class="badge" id="st_subjects"></span>
     </div>
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="val" id="sv_denom">—</div>
-        <div class="lbl">ВКС всего КНМ</div>
-      </div>
-      <div class="stat-card green">
-        <div class="val" id="sv_num">—</div>
-        <div class="lbl">ВКС с МП</div>
-      </div>
-      <div class="stat-card orange">
-        <div class="val" id="sv_pct">—</div>
-        <div class="lbl">Доля ВКС, %</div>
-      </div>
-      <div class="stat-card">
-        <div class="val" id="so_denom">—</div>
-        <div class="lbl">Очные всего КНМ</div>
-      </div>
-      <div class="stat-card green">
-        <div class="val" id="so_num">—</div>
-        <div class="lbl">Очные с МП</div>
-      </div>
-      <div class="stat-card orange">
-        <div class="val" id="so_pct">—</div>
-        <div class="lbl">Доля очных, %</div>
+    <div class="metrics-section">
+      <div class="metrics-section-title">ВКС — видеоконференц-связь</div>
+      <div class="metrics-grid">
+        <div class="metric-card blue"><div class="metric-val" id="sv_denom">—</div><div class="metric-lbl">Всего КНМ в ААС КНД</div></div>
+        <div class="metric-card green"><div class="metric-val" id="sv_num">—</div><div class="metric-lbl">С применением МП</div></div>
+        <div class="metric-card orange"><div class="metric-val" id="sv_pct">—</div><div class="metric-lbl">Доля, %</div></div>
       </div>
     </div>
-    <button class="btn btn-download" id="downloadBtn">
-      ⬇️ Скачать результат (.xlsx)
-    </button>
+    <div class="metrics-section">
+      <div class="metrics-section-title">Очные мероприятия</div>
+      <div class="metrics-grid">
+        <div class="metric-card blue"><div class="metric-val" id="so_denom">—</div><div class="metric-lbl">Всего КНМ в ААС КНД</div></div>
+        <div class="metric-card green"><div class="metric-val" id="so_num">—</div><div class="metric-lbl">С применением МП</div></div>
+        <div class="metric-card orange"><div class="metric-val" id="so_pct">—</div><div class="metric-lbl">Доля, %</div></div>
+      </div>
+    </div>
+    <button class="btn btn-download" id="downloadBtn"><span>⬇️</span> Скачать результат (.xlsx)</button>
   </div>
 </div>
 
+<div class="footer">Файлы обрабатываются на сервере и не сохраняются</div>
+
 <script>
-// --- Даты по умолчанию ---
-(function(){
-  const now  = new Date();
-  const y    = now.getFullYear();
-  const pad  = n => String(n).padStart(2,'0');
-  document.getElementById('date_from').value = `${y}-01-01`;
-  document.getElementById('date_to').value   = `${y}-${pad(now.getMonth()+1)}-${pad(now.getDate())}`;
+(function () {
+  const now = new Date();
+  const pad = n => String(n).padStart(2, '0');
+  const today = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+  document.getElementById('date_from').value = today;
+  document.getElementById('date_to').value   = today;
 })();
 
-// --- Drag-and-drop ---
 const dropZone  = document.getElementById('dropZone');
 const fileInput = document.getElementById('fileInput');
 const fileName  = document.getElementById('fileName');
+const dropTitle = document.getElementById('dropTitle');
+const dropSub   = document.getElementById('dropSub');
+const dropIcon  = document.getElementById('dropIcon');
 
-fileInput.addEventListener('change', () => {
-  if (fileInput.files[0]) fileName.textContent = fileInput.files[0].name;
-});
+function setFile(file) {
+  if (!file) return;
+  const dt = new DataTransfer(); dt.items.add(file);
+  fileInput.files = dt.files;
+  fileName.textContent  = file.name;
+  dropTitle.textContent = 'Файл выбран';
+  dropSub.textContent   = (file.size / 1024 / 1024).toFixed(2) + ' МБ';
+  dropIcon.textContent  = '✅';
+  dropZone.classList.add('has-file');
+}
+fileInput.addEventListener('change', () => { if (fileInput.files[0]) setFile(fileInput.files[0]); });
 dropZone.addEventListener('dragover',  e => { e.preventDefault(); dropZone.classList.add('drag'); });
 dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag'));
-dropZone.addEventListener('drop', e => {
-  e.preventDefault(); dropZone.classList.remove('drag');
-  const f = e.dataTransfer.files[0];
-  if (f) {
-    const dt = new DataTransfer(); dt.items.add(f);
-    fileInput.files = dt.files;
-    fileName.textContent = f.name;
-  }
-});
+dropZone.addEventListener('drop', e => { e.preventDefault(); dropZone.classList.remove('drag'); setFile(e.dataTransfer.files[0]); });
 
-// --- Прогресс-анимация ---
-let progTimer = null;
+let timer = null;
+const steps = [[12,'Загружаем файл...'],[30,'Читаем данные...'],[52,'Фильтруем по дате...'],[72,'Считаем показатели...'],[88,'Формируем отчёт...']];
+
 function startProgress() {
-  const bar   = document.getElementById('progressBar');
-  const label = document.getElementById('progressLabel');
-  const steps = [
-    [10,  'Загрузка файла...'],
-    [30,  'Читаем данные...'],
-    [55,  'Фильтруем по дате...'],
-    [75,  'Считаем показатели...'],
-    [90,  'Формируем Excel...'],
-  ];
-  let i = 0;
-  document.getElementById('progress').style.display = 'block';
-  document.getElementById('errorBox').style.display = 'none';
-  document.getElementById('statsBlock').style.display = 'none';
-  bar.style.width = '5%';
-  progTimer = setInterval(() => {
-    if (i < steps.length) {
-      bar.style.width  = steps[i][0] + '%';
-      label.textContent = steps[i][1];
-      i++;
-    }
-  }, 700);
+  const fill = document.getElementById('progressFill');
+  const text = document.getElementById('progressText');
+  document.getElementById('progressWrap').style.display = 'block';
+  document.getElementById('errorBox').style.display     = 'none';
+  document.getElementById('results').style.display      = 'none';
+  fill.style.background = 'linear-gradient(90deg, var(--blue), #7aa3e8)';
+  fill.style.width = '4%'; let i = 0;
+  timer = setInterval(() => { if (i < steps.length) { fill.style.width = steps[i][0]+'%'; text.textContent = steps[i][1]; i++; } }, 600);
 }
-function stopProgress(success) {
-  clearInterval(progTimer);
-  const bar   = document.getElementById('progressBar');
-  const label = document.getElementById('progressLabel');
-  if (success) {
-    bar.style.width = '100%';
-    bar.style.background = 'linear-gradient(90deg,#538135,#7ac056)';
-    label.textContent = 'Готово!';
-  } else {
-    bar.style.width = '100%';
-    bar.style.background = '#e74c3c';
-    label.textContent = 'Ошибка';
-  }
-  setTimeout(() => {
-    document.getElementById('progress').style.display = 'none';
-    bar.style.background = '';
-  }, 1500);
+function stopProgress(ok) {
+  clearInterval(timer);
+  const fill = document.getElementById('progressFill');
+  const text = document.getElementById('progressText');
+  fill.style.width = '100%';
+  fill.style.background = ok ? 'linear-gradient(90deg, var(--green), #4fc87a)' : 'var(--red)';
+  text.textContent = ok ? 'Готово!' : 'Ошибка';
+  setTimeout(() => { document.getElementById('progressWrap').style.display = 'none'; fill.style.background = ''; }, 1400);
 }
 
-// --- Форма ---
-let lastFormData = null;
-
-document.getElementById('mainForm').addEventListener('submit', async function(e) {
+document.getElementById('mainForm').addEventListener('submit', async function (e) {
   e.preventDefault();
-
   const btn = document.getElementById('submitBtn');
   btn.disabled = true;
   document.getElementById('downloadBtn').style.display = 'none';
-
-  if (!fileInput.files[0]) {
-    showError('Выберите файл для анализа'); btn.disabled = false; return;
-  }
-
-  const fd = new FormData(this);
-  lastFormData = fd;
+  if (!fileInput.files[0]) { showError('Выберите файл для анализа'); btn.disabled = false; return; }
   startProgress();
-
-  try {
-    const fd2 = new FormData();
-    fd2.append('file',      fileInput.files[0]);
-    fd2.append('date_from', fd.get('date_from'));
-    fd2.append('date_to',   fd.get('date_to'));
-
-    const res  = await fetch('/preview', { method: 'POST', body: fd2 });
-    const text = await res.text();
-
-    let json;
-    try {
-      json = JSON.parse(text);
-    } catch(_) {
-      // Сервер вернул HTML вместо JSON — показываем первые 300 символов для диагностики
-      stopProgress(false);
-      showError('Сервер вернул неожиданный ответ (не JSON).\n\nПервые символы ответа:\n' + text.slice(0, 300));
-      return;
-    }
-
-    if (!res.ok || json.error) {
-      stopProgress(false);
-      showError(json.error || 'Неизвестная ошибка');
-    } else {
-      stopProgress(true);
-      showStats(json.stats);
-    }
-  } catch(err) {
-    stopProgress(false);
-    showError('Сетевая ошибка: ' + err.message);
-  } finally {
-    btn.disabled = false;
-  }
-});
-
-// --- Кнопка скачать ---
-document.getElementById('downloadBtn').addEventListener('click', async function() {
-  this.textContent = '⏳ Формируем файл...';
-  this.disabled = true;
-
   const fd = new FormData();
   fd.append('file',      fileInput.files[0]);
   fd.append('date_from', document.getElementById('date_from').value);
   fd.append('date_to',   document.getElementById('date_to').value);
+  try {
+    const res  = await fetch('/preview', { method: 'POST', body: fd });
+    const text = await res.text();
+    let json;
+    try { json = JSON.parse(text); }
+    catch (_) { stopProgress(false); showError('Сервер вернул неожиданный ответ (не JSON).\n\n' + text.slice(0, 300)); return; }
+    if (!res.ok || json.error) { stopProgress(false); showError(json.error || 'Неизвестная ошибка'); }
+    else { stopProgress(true); showStats(json.stats); }
+  } catch (err) { stopProgress(false); showError('Сетевая ошибка: ' + err.message); }
+  finally { btn.disabled = false; }
+});
 
+document.getElementById('downloadBtn').addEventListener('click', async function () {
+  this.disabled = true; this.innerHTML = '<span>⏳</span> Формируем файл...';
+  const fd = new FormData();
+  fd.append('file',      fileInput.files[0]);
+  fd.append('date_from', document.getElementById('date_from').value);
+  fd.append('date_to',   document.getElementById('date_to').value);
   try {
     const res = await fetch('/analyze', { method: 'POST', body: fd });
     if (!res.ok) {
       const text = await res.text();
-      let msg;
-      try   { msg = JSON.parse(text).error; }
-      catch (_) { msg = 'Сервер вернул ошибку:\n' + text.slice(0, 300); }
-      showError(msg || 'Ошибка при формировании файла');
-      return;
+      let msg; try { msg = JSON.parse(text).error; } catch (_) { msg = 'Сервер вернул ошибку:\n' + text.slice(0, 300); }
+      showError(msg || 'Ошибка при формировании файла'); return;
     }
     const blob = await res.blob();
     const url  = URL.createObjectURL(blob);
@@ -406,35 +315,27 @@ document.getElementById('downloadBtn').addEventListener('click', async function(
     const cd   = res.headers.get('Content-Disposition') || '';
     const m    = cd.match(/filename\*?=['"]?(?:UTF-8'')?([^'";\n]+)/i);
     a.download = m ? decodeURIComponent(m[1]) : 'результат.xlsx';
-    a.href     = url;
-    a.click();
-    URL.revokeObjectURL(url);
-  } catch(err) {
-    showError('Ошибка скачивания: ' + err.message);
-  } finally {
-    this.textContent = '⬇️ Скачать результат (.xlsx)';
-    this.disabled = false;
-  }
+    a.href = url; a.click(); URL.revokeObjectURL(url);
+  } catch (err) { showError('Ошибка скачивания: ' + err.message); }
+  finally { this.disabled = false; this.innerHTML = '<span>⬇️</span> Скачать результат (.xlsx)'; }
 });
 
 function showStats(s) {
-  document.getElementById('st_rows').textContent     = `Всего строк: ${s.total_rows}`;
-  document.getElementById('st_filtered').textContent = `В периоде: ${s.filtered_rows}`;
-  document.getElementById('st_subjects').textContent = `Субъектов: ${s.subjects}`;
+  document.getElementById('st_rows').textContent     = 'Всего строк: ' + s.total_rows;
+  document.getElementById('st_filtered').textContent = 'В периоде: '   + s.filtered_rows;
+  document.getElementById('st_subjects').textContent = 'Субъектов: '   + s.subjects;
   document.getElementById('sv_denom').textContent = s.vks_denom;
   document.getElementById('sv_num').textContent   = s.vks_num;
   document.getElementById('sv_pct').textContent   = s.vks_pct + '%';
   document.getElementById('so_denom').textContent = s.och_denom;
   document.getElementById('so_num').textContent   = s.och_num;
   document.getElementById('so_pct').textContent   = s.och_pct + '%';
-  document.getElementById('statsBlock').style.display  = 'block';
-  document.getElementById('downloadBtn').style.display = 'block';
+  document.getElementById('results').style.display     = 'block';
+  document.getElementById('downloadBtn').style.display = 'flex';
 }
-
 function showError(msg) {
   const box = document.getElementById('errorBox');
-  box.textContent = '❌ ' + msg;
-  box.style.display = 'block';
+  box.textContent = '❌  ' + msg; box.style.display = 'block';
 }
 </script>
 </body>
