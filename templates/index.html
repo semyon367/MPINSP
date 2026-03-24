@@ -1,1 +1,430 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Анализ МП Инспектор</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #f0f2f5;
+      color: #1a1a2e;
+      min-height: 100vh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 40px 16px;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+      padding: 40px 44px;
+      width: 100%;
+      max-width: 640px;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+    .logo-icon {
+      width: 44px; height: 44px;
+      background: linear-gradient(135deg, #4472C4, #2a4fa0);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px;
+    }
+    .logo h1 { font-size: 1.35rem; font-weight: 700; color: #1a1a2e; line-height: 1.2; }
+    .logo p  { font-size: 0.8rem; color: #888; margin-top: 2px; }
+
+    .section-title {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #4472C4;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      margin-bottom: 10px;
+    }
+
+    .field { margin-bottom: 20px; }
+    label  { display: block; font-size: 0.88rem; font-weight: 600; margin-bottom: 6px; color: #333; }
+
+    input[type="date"], .file-area {
+      width: 100%;
+      border: 1.5px solid #dde1e9;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 0.95rem;
+      color: #1a1a2e;
+      transition: border-color .2s;
+      background: #fafbfc;
+    }
+    input[type="date"]:focus { outline: none; border-color: #4472C4; background: #fff; }
+
+    .date-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+    /* Drag-and-drop зона */
+    .file-area {
+      min-height: 110px;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      text-align: center;
+      color: #888;
+      font-size: 0.9rem;
+      transition: border-color .2s, background .2s;
+    }
+    .file-area:hover, .file-area.drag { border-color: #4472C4; background: #f0f4ff; }
+    .file-area .icon { font-size: 2rem; }
+    .file-area input { display: none; }
+    .file-area .filename { color: #4472C4; font-weight: 600; font-size: 0.88rem; }
+
+    .btn {
+      width: 100%;
+      padding: 13px;
+      border: none;
+      border-radius: 9px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity .15s, transform .1s;
+      margin-top: 4px;
+    }
+    .btn:active { transform: scale(0.98); }
+    .btn-primary { background: linear-gradient(135deg, #4472C4, #2a4fa0); color: #fff; }
+    .btn-primary:disabled { opacity: .55; cursor: not-allowed; }
+    .btn-download { background: linear-gradient(135deg, #538135, #3a5c24); color: #fff; display: none; margin-top: 10px; }
+
+    /* Прогресс */
+    .progress { display: none; margin-top: 18px; }
+    .progress-bar-wrap {
+      background: #eef0f5; border-radius: 99px; height: 8px; overflow: hidden;
+    }
+    .progress-bar {
+      height: 100%; width: 0%;
+      background: linear-gradient(90deg, #4472C4, #7aa3e8);
+      border-radius: 99px;
+      transition: width .3s ease;
+    }
+    .progress-label { font-size: 0.83rem; color: #666; margin-top: 7px; text-align: center; }
+
+    /* Статистика */
+    .stats { display: none; margin-top: 24px; }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+    .stat-card {
+      background: #f5f7ff;
+      border-radius: 10px;
+      padding: 14px 12px;
+      text-align: center;
+    }
+    .stat-card .val  { font-size: 1.6rem; font-weight: 800; color: #4472C4; line-height: 1; }
+    .stat-card .lbl  { font-size: 0.73rem; color: #777; margin-top: 5px; }
+    .stat-card.green .val { color: #538135; }
+    .stat-card.orange .val { color: #C55A11; }
+
+    .info-row {
+      display: flex; gap: 8px; flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+    .badge {
+      background: #eef2ff; color: #4472C4;
+      border-radius: 6px; padding: 4px 10px;
+      font-size: 0.8rem; font-weight: 600;
+    }
+
+    /* Ошибка */
+    .error-box {
+      display: none;
+      margin-top: 16px;
+      background: #fff1f1; border: 1.5px solid #f5c6c6;
+      border-radius: 9px; padding: 14px 16px;
+      color: #c0392b; font-size: 0.88rem;
+      white-space: pre-wrap; word-break: break-word;
+    }
+
+    hr { border: none; border-top: 1.5px solid #eef0f5; margin: 24px 0; }
+
+    @media (max-width: 480px) {
+      .card { padding: 24px 18px; }
+      .stats-grid { grid-template-columns: 1fr 1fr; }
+      .date-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">
+    <div class="logo-icon">📊</div>
+    <div>
+      <h1>МП Инспектор</h1>
+      <p>Анализ контрольно-надзорных мероприятий</p>
+    </div>
+  </div>
+
+  <form id="mainForm">
+
+    <div class="section-title">1. Файл выгрузки</div>
+    <div class="field">
+      <div class="file-area" id="dropZone" onclick="document.getElementById('fileInput').click()">
+        <div class="icon">📂</div>
+        <div>Нажмите или перетащите файл</div>
+        <div style="font-size:.8rem; color:#aaa">.xlsx / .xlsm</div>
+        <input type="file" id="fileInput" name="file" accept=".xlsx,.xlsm"/>
+        <div class="filename" id="fileName"></div>
+      </div>
+    </div>
+
+    <div class="section-title">2. Период (дата акта КНМ)</div>
+    <div class="date-row field">
+      <div>
+        <label for="date_from">С</label>
+        <input type="date" id="date_from" name="date_from" required/>
+      </div>
+      <div>
+        <label for="date_to">По</label>
+        <input type="date" id="date_to" name="date_to" required/>
+      </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary" id="submitBtn">
+      ⚙️ Запустить анализ
+    </button>
+  </form>
+
+  <!-- Прогресс -->
+  <div class="progress" id="progress">
+    <div class="progress-bar-wrap">
+      <div class="progress-bar" id="progressBar"></div>
+    </div>
+    <div class="progress-label" id="progressLabel">Загрузка файла...</div>
+  </div>
+
+  <!-- Ошибка -->
+  <div class="error-box" id="errorBox"></div>
+
+  <!-- Статистика -->
+  <div class="stats" id="statsBlock">
+    <hr/>
+    <div class="section-title">Результат</div>
+    <div class="info-row">
+      <span class="badge" id="st_rows"></span>
+      <span class="badge" id="st_filtered"></span>
+      <span class="badge" id="st_subjects"></span>
+    </div>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="val" id="sv_denom">—</div>
+        <div class="lbl">ВКС всего КНМ</div>
+      </div>
+      <div class="stat-card green">
+        <div class="val" id="sv_num">—</div>
+        <div class="lbl">ВКС с МП</div>
+      </div>
+      <div class="stat-card orange">
+        <div class="val" id="sv_pct">—</div>
+        <div class="lbl">Доля ВКС, %</div>
+      </div>
+      <div class="stat-card">
+        <div class="val" id="so_denom">—</div>
+        <div class="lbl">Очные всего КНМ</div>
+      </div>
+      <div class="stat-card green">
+        <div class="val" id="so_num">—</div>
+        <div class="lbl">Очные с МП</div>
+      </div>
+      <div class="stat-card orange">
+        <div class="val" id="so_pct">—</div>
+        <div class="lbl">Доля очных, %</div>
+      </div>
+    </div>
+    <button class="btn btn-download" id="downloadBtn">
+      ⬇️ Скачать результат (.xlsx)
+    </button>
+  </div>
+</div>
+
+<script>
+// --- Даты по умолчанию ---
+(function(){
+  const now  = new Date();
+  const y    = now.getFullYear();
+  const pad  = n => String(n).padStart(2,'0');
+  document.getElementById('date_from').value = `${y}-01-01`;
+  document.getElementById('date_to').value   = `${y}-${pad(now.getMonth()+1)}-${pad(now.getDate())}`;
+})();
+
+// --- Drag-and-drop ---
+const dropZone  = document.getElementById('dropZone');
+const fileInput = document.getElementById('fileInput');
+const fileName  = document.getElementById('fileName');
+
+fileInput.addEventListener('change', () => {
+  if (fileInput.files[0]) fileName.textContent = fileInput.files[0].name;
+});
+dropZone.addEventListener('dragover',  e => { e.preventDefault(); dropZone.classList.add('drag'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault(); dropZone.classList.remove('drag');
+  const f = e.dataTransfer.files[0];
+  if (f) {
+    const dt = new DataTransfer(); dt.items.add(f);
+    fileInput.files = dt.files;
+    fileName.textContent = f.name;
+  }
+});
+
+// --- Прогресс-анимация ---
+let progTimer = null;
+function startProgress() {
+  const bar   = document.getElementById('progressBar');
+  const label = document.getElementById('progressLabel');
+  const steps = [
+    [10,  'Загрузка файла...'],
+    [30,  'Читаем данные...'],
+    [55,  'Фильтруем по дате...'],
+    [75,  'Считаем показатели...'],
+    [90,  'Формируем Excel...'],
+  ];
+  let i = 0;
+  document.getElementById('progress').style.display = 'block';
+  document.getElementById('errorBox').style.display = 'none';
+  document.getElementById('statsBlock').style.display = 'none';
+  bar.style.width = '5%';
+  progTimer = setInterval(() => {
+    if (i < steps.length) {
+      bar.style.width  = steps[i][0] + '%';
+      label.textContent = steps[i][1];
+      i++;
+    }
+  }, 700);
+}
+function stopProgress(success) {
+  clearInterval(progTimer);
+  const bar   = document.getElementById('progressBar');
+  const label = document.getElementById('progressLabel');
+  if (success) {
+    bar.style.width = '100%';
+    bar.style.background = 'linear-gradient(90deg,#538135,#7ac056)';
+    label.textContent = 'Готово!';
+  } else {
+    bar.style.width = '100%';
+    bar.style.background = '#e74c3c';
+    label.textContent = 'Ошибка';
+  }
+  setTimeout(() => {
+    document.getElementById('progress').style.display = 'none';
+    bar.style.background = '';
+  }, 1500);
+}
+
+// --- Форма ---
+let lastFormData = null;
+
+document.getElementById('mainForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  document.getElementById('downloadBtn').style.display = 'none';
+
+  if (!fileInput.files[0]) {
+    showError('Выберите файл для анализа'); btn.disabled = false; return;
+  }
+
+  const fd = new FormData(this);
+  lastFormData = fd;
+  startProgress();
+
+  try {
+    // Сначала получаем статистику
+    const fd2 = new FormData();
+    fd2.append('file',      fileInput.files[0]);
+    fd2.append('date_from', fd.get('date_from'));
+    fd2.append('date_to',   fd.get('date_to'));
+
+    const res = await fetch('/preview', { method: 'POST', body: fd2 });
+    const json = await res.json();
+
+    if (!res.ok || json.error) {
+      stopProgress(false);
+      showError(json.error || 'Неизвестная ошибка');
+    } else {
+      stopProgress(true);
+      showStats(json.stats);
+    }
+  } catch(err) {
+    stopProgress(false);
+    showError('Сетевая ошибка: ' + err.message);
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+// --- Кнопка скачать ---
+document.getElementById('downloadBtn').addEventListener('click', async function() {
+  this.textContent = '⏳ Формируем файл...';
+  this.disabled = true;
+
+  const fd = new FormData();
+  fd.append('file',      fileInput.files[0]);
+  fd.append('date_from', document.getElementById('date_from').value);
+  fd.append('date_to',   document.getElementById('date_to').value);
+
+  try {
+    const res = await fetch('/analyze', { method: 'POST', body: fd });
+    if (!res.ok) {
+      const j = await res.json().catch(() => ({}));
+      showError(j.error || 'Ошибка при формировании файла');
+      return;
+    }
+    const blob = await res.blob();
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    const cd   = res.headers.get('Content-Disposition') || '';
+    const m    = cd.match(/filename\*?=['"]?(?:UTF-8'')?([^'";\n]+)/i);
+    a.download = m ? decodeURIComponent(m[1]) : 'результат.xlsx';
+    a.href     = url;
+    a.click();
+    URL.revokeObjectURL(url);
+  } catch(err) {
+    showError('Ошибка скачивания: ' + err.message);
+  } finally {
+    this.textContent = '⬇️ Скачать результат (.xlsx)';
+    this.disabled = false;
+  }
+});
+
+function showStats(s) {
+  document.getElementById('st_rows').textContent     = `Всего строк: ${s.total_rows}`;
+  document.getElementById('st_filtered').textContent = `В периоде: ${s.filtered_rows}`;
+  document.getElementById('st_subjects').textContent = `Субъектов: ${s.subjects}`;
+  document.getElementById('sv_denom').textContent = s.vks_denom;
+  document.getElementById('sv_num').textContent   = s.vks_num;
+  document.getElementById('sv_pct').textContent   = s.vks_pct + '%';
+  document.getElementById('so_denom').textContent = s.och_denom;
+  document.getElementById('so_num').textContent   = s.och_num;
+  document.getElementById('so_pct').textContent   = s.och_pct + '%';
+  document.getElementById('statsBlock').style.display  = 'block';
+  document.getElementById('downloadBtn').style.display = 'block';
+}
+
+function showError(msg) {
+  const box = document.getElementById('errorBox');
+  box.textContent = '❌ ' + msg;
+  box.style.display = 'block';
+}
+</script>
+</body>
+</html>
 
